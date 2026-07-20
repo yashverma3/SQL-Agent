@@ -104,17 +104,13 @@ class SQLQueryAgent:
             llm = ChatGoogleGenerativeAI(
                 model="gemini-3.5-flash",
                 temperature=0,
-                google_api_key=api_key,
-                max_retries=1,      # avoid silent multi-minute retry loops on rate limits
-                timeout=30,
+                google_api_key=api_key
             )
         else:
             llm = ChatOpenAI(
                 model="gpt-4o-mini",
                 temperature=0,
-                api_key=api_key,
-                max_retries=1,
-                timeout=30,
+                api_key=api_key
             )
 
         self.graph = create_agent_graph(llm)

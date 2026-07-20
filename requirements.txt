@@ -5,3 +5,4 @@ streamlit==1.41.1
 python-dotenv==1.0.1
 packaging==24.2
 protobuf==5.29.6
+langgraph

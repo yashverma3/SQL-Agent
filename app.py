@@ -12,7 +12,6 @@ from src.database import init_db, get_schema_text, SCHEMA
 # Cache DB initialization
 @st.cache_resource
 def setup_database():
-    
     init_db()
 
 setup_database()
@@ -84,10 +83,11 @@ with st.sidebar:
     examples = [
         "Show me all customers from New York",
         "What are the top 3 most expensive products?",
-        "List all orders placed by Alice Johnson",
         "What is the total revenue by category?",
-        "How many employees work in Engineering?",
-        "Show me all products with stock less than 100",
+        "Update the stock of Wireless Mouse to 200",
+        "Delete all orders with status pending",
+        "Add a new customer named Nina Patel in Seattle",
+        "Increase the price of all Electronics products by 10 percent",
     ]
     for example in examples:
         if st.button(example, key=example):
@@ -105,6 +105,8 @@ for msg in st.session_state.chat_history:
             if msg.get("kind") == "error":
                 st.error(msg["content"])
             else:
+                if msg.get("statement_type") in {"INSERT", "UPDATE", "DELETE"}:
+                    st.warning(f"⚠️ This is a **{msg['statement_type']}** statement — it would modify data, not just read it.")
                 st.code(msg["content"], language="sql")
         else:
             st.markdown(msg["content"])
@@ -132,8 +134,11 @@ if user_input:
         with st.spinner("Generating SQL..."):
             try:
                 sql = st.session_state.agent.query(user_input, api_key, provider)
+                statement_type = st.session_state.agent.context.get("last_statement_type", "")
+                if statement_type in {"INSERT", "UPDATE", "DELETE"}:
+                    st.warning(f"⚠️ This is a **{statement_type}** statement — it would modify data, not just read it. Review carefully before running it against a real database.")
                 st.code(sql, language="sql")
-                st.session_state.chat_history.append({"role": "assistant", "content": sql})
+                st.session_state.chat_history.append({"role": "assistant", "content": sql, "statement_type": statement_type})
             except ValueError as e:
                 st.error(str(e))
                 st.session_state.chat_history.append({"role": "assistant", "content": str(e), "kind": "error"})
